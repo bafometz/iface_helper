@@ -28,34 +28,4 @@ target_link_libraries(${PROJECT_NAME}
     )
 ```
 
-## Usage
-
-```c++
-#include "InterfacesLib/ifaceinformation.h"
-
-int
-main ( int argc, char* argv[] )
-{
-   NetworkInformer net;
-   InterfacesList  list = net.getInterfacesList ();
-
-   for ( auto& element : list )
-   {
-        std::cout << *element;
-   }
-   return 0;
-}
-```
-
-## Output
-
-```
-
-Interface: lo
-Ip address: 127.0.0.1
-Net mask: 255.0.0.0
-BroadCast address: 0.0.0.0
-Network: 127.0.0.0
-
-```
 
