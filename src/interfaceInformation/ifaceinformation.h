@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 #include <bitset>
-#include "version.h"
+#include "../../version.h"
 
 struct Ip_s
 {
