@@ -10,6 +10,7 @@
 struct Ip_s
 {
     std::string ip = ""; ///< Человекочитаемый ip
+    u_int64_t   ipInt = 0;
     bool isV4() {return ipVersion[0];};
     bool isV6() {return ipVersion[1];};
 
@@ -33,7 +34,7 @@ struct NetInfo
    std::string macAddress = ""; ///< Мак адрес
    int         mtu = 0;       ///< Значение МТУ
    bool isUp =  false;        ///< Поднят интерфейс или нет
-   bool isLoopBack = false;   ///< Петля
+   bool isLoopBack = false;   ///< Виртуальный адрес
    friend std::ostream&
    operator<< ( std::ostream& os, const NetInfo& ni )
    {
@@ -42,8 +43,8 @@ struct NetInfo
          << "Net mask: " << ni.netMask << "\n"
          << "BroadCast address: " << ni.broadcast << "\n"
          << "Network: " << ni.network << "\n"
-         << "Is interface up: " << ni.isUp << "\n"
-         << "Is interface LoopBack: " << ni.isLoopBack << "\n"
+         << "Is interface up: " << (ni.isUp ? "true" : "false") << "\n"
+         << "Is interface LoopBack: " << (ni.isLoopBack ? "true" : "false") << "\n"
          << "\n";
       return os;
    }
@@ -58,9 +59,9 @@ class NetworkInformer
 {
 public:
     NetworkInformer();
-    InterfacesList getInterfacesList();
-    NetInfoPtr     getInterfaceInfo(const std::string& ifaceName);
-    void           update();
+    InterfacesList getInterfacesList(); ///< Возвращает список интерфейсов
+    NetInfoPtr     getInterfaceInfo(const std::string& ifaceName); ///< Возвращает конкретный интерфейс
+    void           update();                                        ///< Обновляет информацию
     ~NetworkInformer();
 
 private:
