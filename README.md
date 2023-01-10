@@ -29,3 +29,41 @@ target_link_libraries(${PROJECT_NAME}
 ```
 
 
+
+## Usage
+
+
+
+Information about interfaces is updated when the constructor is called, if there is a suspicion that information about interfaces has changed, you need to call the **update ()** method.
+
+
+
+```c++
+#include <iostream>
+#include "InterfacesLib/src/interfaceInformation/ifaceinformation.h"
+
+int main()
+{
+
+    NetworkInformer ni;
+
+    for(const auto& element: ni.getInterfacesList())
+    {
+        std::cout << element->interface << std::endl;
+    }
+
+    /*
+     * Много часов спустя, возможно что-то могло измениться
+     * Нужно проверить, перед проверкой вызываем метод update()
+    */
+
+    ni.update();
+
+    for(const auto& element: ni.getInterfacesList())
+    {
+        std::cout << element->interface << std::endl;
+    }
+
+    return 0;
+}
+```
