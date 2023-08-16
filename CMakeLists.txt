@@ -23,8 +23,8 @@ if(NOT EXISTS ${CMAKE_MODULE_PATH}/version/version.cmake)
         https://gitlab.com/-/snippets/2417468/raw/main/version.cmake
         ${CMAKE_MODULE_PATH}/version/version.cmake)
 endif()
-
 include(${CMAKE_MODULE_PATH}/version/version.cmake)
+
 _configure_information_header(${CMAKE_CURRENT_SOURCE_DIR}/src/interfaceInformation/version.h.in ${CMAKE_CURRENT_SOURCE_DIR}/src/interfaceInformation/version.h)
 set(LIBRARY_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/build)
 
