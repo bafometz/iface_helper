@@ -7,7 +7,7 @@ project(iface_information
 message(STATUS "CMake version   : " ${CMAKE_SYSTEM_VERSION})
 message(STATUS "Compiler        : " ${CMAKE_CXX_COMPILER})
 message(STATUS "Operating System: " ${CMAKE_SYSTEM})
-message(STATUS "SYSTEM PROCESSOR: " ${CMAKE_SYSTEM_PROCESSOR})
+message(STATUS "Arch            : " ${CMAKE_SYSTEM_PROCESSOR})
 
 set(CMAKE_CXX_STANDARD 17)
 
@@ -24,6 +24,8 @@ if(NOT EXISTS ${CMAKE_MODULE_PATH}/version/version.cmake)
         ${CMAKE_MODULE_PATH}/version/version.cmake)
 endif()
 
+include(${CMAKE_MODULE_PATH}/version/version.cmake)
+_configure_information_header(${CMAKE_CURRENT_SOURCE_DIR}/src/interfaceInformation/version.h.in ${CMAKE_CURRENT_SOURCE_DIR}/src/interfaceInformation/version.h)
 set(LIBRARY_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/build)
 
 
