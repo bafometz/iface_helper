@@ -1,16 +1,16 @@
 # How to build 
 
-## Build standalone shared lib
+## Build standalone static lib
 
 ```bash
  git clone https://gitlab.com/Bafometz/InterfaceInformation.git && cd interface_information
  cmake && make
 ```
 
-## Build standalone static lib
+## Build standalone shared lib
 
 ```bash
- git clone https://gitlab.com/Bafometz/InterfaceInformation.git && cd InterfaceInformation
+ git clone https://gitlab.com/Bafometz/InterfaceInformation.git && cd iface_information
  cmake -DMAKE_SHARED && make
 ```
 
@@ -24,7 +24,7 @@ Include to CMakeLists.txt and link library
 add_subdirectory(<where_you_placed_sources/interface_information>)
 ....
 target_link_libraries(${PROJECT_NAME}
-    IfaceInformation
+    iface_information
     )
 ```
 

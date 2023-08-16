@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.9)
 
-project(IfaceInformation
+project(iface_information
     VERSION 1.0.0
     DESCRIPTION "Library for get information about network interfaces")
 
