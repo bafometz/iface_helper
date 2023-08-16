@@ -70,3 +70,6 @@ _deps
 version.h 
 version.h.in
 version.cmake
+
+build
+Build
