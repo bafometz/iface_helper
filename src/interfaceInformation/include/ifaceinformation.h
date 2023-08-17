@@ -2,11 +2,11 @@
 #define NETWORKINFORMER_H
 #include "struct_definition.h"
 #include "version.h"
-#include <bitset>
 #include <map>
 
 struct ifreq;
 
+// https://stackoverflow.com/a/4139811
 namespace iface_lib
 {
 
@@ -22,19 +22,20 @@ namespace iface_lib
       private:
         NetInfoPtr parseReq(const ifreq& ifr, int sd) noexcept;
 
-        void        update_information();
-        bool        update_ip(int sd, ifreq* ifr, NetInfoPtr);
-        bool        update_broadcast(int sd, ifreq* ifr, NetInfoPtr ni);
-        bool        update_mac(int sd, ifreq* ifr, NetInfoPtr ni);
-        bool        update_net_mask(int sd, ifreq* ifr, NetInfoPtr ni);
-        bool        update_mtu(int sd, ifreq* ifr, NetInfoPtr ni);
-        bool        update_network(int sd, ifreq* ifr, NetInfoPtr ni);
+        void update_information();
+        bool update_ip(int sd, ifreq* ifr, NetInfoPtr);
+        bool update_broadcast(int sd, ifreq* ifr, NetInfoPtr ni);
+        bool update_mac(int sd, ifreq* ifr, NetInfoPtr ni);
+        bool update_net_mask(int sd, ifreq* ifr, NetInfoPtr ni);
+        bool update_mtu(int sd, ifreq* ifr, NetInfoPtr ni);
+        bool update_network(int sd, ifreq* ifr, NetInfoPtr ni);
 
         std::string ipToStr(int ip);
 
       private:
-        std::map< std::string, NetInfoPtr > m_information;
+        std::map< std::string, NetInfoPtr > information_;
+        const uint8_t                       maxLenMacAddr_ = 6;
     };
 
-}  // namespace iface_helper
+}  // namespace iface_lib
 #endif  // NETWORKINFORMER_H

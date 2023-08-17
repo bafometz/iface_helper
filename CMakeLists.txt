@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.9)
 
 project(iface_information
-    VERSION 1.0.0
+    VERSION 1.0.1
     DESCRIPTION "Library for get information about network interfaces")
 
 message(STATUS "CMake version   : " ${CMAKE_SYSTEM_VERSION})
