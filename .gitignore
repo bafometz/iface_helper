@@ -68,7 +68,6 @@ CTestTestfile.cmake
 _deps
 
 version.h 
-version.h.in
 version.cmake
 
 build
