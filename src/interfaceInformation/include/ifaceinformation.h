@@ -7,18 +7,17 @@
 
 struct ifreq;
 
-namespace iface_helper
+namespace iface_lib
 {
-    class UnixNetworkInformer;
 
-    class NetworkInformer
+    class IfaceHelper
     {
       public:
-        NetworkInformer() noexcept;
+        IfaceHelper() noexcept;
         InterfacesList getInterfacesList() noexcept;                             ///< Возвращает список интерфейсов
         NetInfoPtr     getInterfaceInfo(const std::string& ifaceName) noexcept;  ///< Возвращает конкретный интерфейс
         void           update() noexcept;                                        ///< Обновляет информацию
-        ~NetworkInformer();
+        ~IfaceHelper();
 
       private:
         NetInfoPtr parseReq(const ifreq& ifr, int sd) noexcept;

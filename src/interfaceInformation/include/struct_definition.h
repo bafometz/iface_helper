@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-namespace iface_helper
+namespace iface_lib
 {
     enum class ip_version
     {
@@ -29,13 +29,16 @@ namespace iface_helper
         {
             switch (version)
             {
-            case iface_helper::ip_version::empty:
+            case iface_lib::ip_version::empty:
                 return "";
-            case iface_helper::ip_version::ip_v4:
+            case iface_lib::ip_version::ip_v4:
                 return "IpV4";
-            case iface_helper::ip_version::ip_v6:
+            case iface_lib::ip_version::ip_v6:
                 return "IpV6";
+            default:
+                return "";
             }
+            return "";
         };
     };
 

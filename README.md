@@ -45,7 +45,7 @@ Information about interfaces is updated when the constructor is called, if there
 int main()
 {
 
-    NetworkInformer ni;
+    iface_lib::IfaceHelper ni;
 
     for(const auto& element: ni.getInterfacesList())
     {
@@ -59,9 +59,9 @@ int main()
 
     ni.update();
 
-    for(const auto& element: ni.getInterfacesList())
+    for(const auto element : ifaces)
     {
-        std::cout << element->interface << std::endl;
+        std::cout << *element << std::endl;
     }
 
     return 0;

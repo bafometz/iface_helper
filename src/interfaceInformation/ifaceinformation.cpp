@@ -16,7 +16,7 @@
 #define maxLenMacAddr 6
 
 ///< @todo Добавить структуру для работы с сокетами в RAII
-namespace iface_helper
+namespace iface_lib
 {
     static void print_error_msg(const std::string &msg)
     {
@@ -59,12 +59,12 @@ namespace iface_helper
         return static_cast< bool >(ifr.ifr_flags & IFF_LOOPBACK);
     }
 
-    NetworkInformer::NetworkInformer() noexcept
+    IfaceHelper::IfaceHelper() noexcept
     {
         update_information();
     }
 
-    InterfacesList NetworkInformer::getInterfacesList() noexcept
+    InterfacesList IfaceHelper::getInterfacesList() noexcept
     {
         if (m_information.empty())
         {
@@ -79,9 +79,9 @@ namespace iface_helper
         return lst;
     }
 
-    NetworkInformer::~NetworkInformer() {}
+    IfaceHelper::~IfaceHelper() {}
 
-    void NetworkInformer::update_information()
+    void IfaceHelper::update_information()
     {
         struct ifconf ifc;
         struct ifreq  ifr[10];
@@ -134,7 +134,7 @@ namespace iface_helper
         }
     }
 
-    bool NetworkInformer::update_ip(int sd, ifreq *ifr, NetInfoPtr ni)
+    bool IfaceHelper::update_ip(int sd, ifreq *ifr, NetInfoPtr ni)
     {
         if (ioctl(sd, SIOCGIFADDR, ifr) == 0)
         {
@@ -152,7 +152,7 @@ namespace iface_helper
         }
     }
 
-    bool NetworkInformer::update_broadcast(int sd, ifreq *ifr, NetInfoPtr ni)
+    bool IfaceHelper::update_broadcast(int sd, ifreq *ifr, NetInfoPtr ni)
     {
         if (ioctl(sd, SIOCGIFBRDADDR, ifr) == 0)
         {
@@ -167,7 +167,7 @@ namespace iface_helper
         }
     }
 
-    bool NetworkInformer::update_mac(int sd, ifreq *ifr, NetInfoPtr ni)
+    bool IfaceHelper::update_mac(int sd, ifreq *ifr, NetInfoPtr ni)
     {
         if (ioctl(sd, SIOCGIFHWADDR, ifr) == 0)
         {
@@ -186,7 +186,7 @@ namespace iface_helper
         }
     }
 
-    bool NetworkInformer::update_net_mask(int sd, ifreq *ifr, NetInfoPtr ni)
+    bool IfaceHelper::update_net_mask(int sd, ifreq *ifr, NetInfoPtr ni)
     {
         if (ioctl(sd, SIOCGIFNETMASK, ifr) == 0)
         {
@@ -201,7 +201,7 @@ namespace iface_helper
         }
     }
 
-    bool NetworkInformer::update_mtu(int sd, ifreq *ifr, NetInfoPtr ni)
+    bool IfaceHelper::update_mtu(int sd, ifreq *ifr, NetInfoPtr ni)
     {
         if (ioctl(sd, SIOCGIFMTU, ifr) == 0)
         {
@@ -215,7 +215,7 @@ namespace iface_helper
         }
     }
 
-    bool NetworkInformer::update_network(int sd, ifreq *ifr, NetInfoPtr ni)
+    bool IfaceHelper::update_network(int sd, ifreq *ifr, NetInfoPtr ni)
     {
         int mask { 0 };
         int addr { 0 };
@@ -243,7 +243,7 @@ namespace iface_helper
         return true;
     }
 
-    std::string NetworkInformer::ipToStr(int ip)
+    std::string IfaceHelper::ipToStr(int ip)
     {
         std::string result;
 
