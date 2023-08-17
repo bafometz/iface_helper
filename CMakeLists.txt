@@ -8,11 +8,11 @@ message(STATUS "CMake version   : " ${CMAKE_SYSTEM_VERSION})
 message(STATUS "Compiler        : " ${CMAKE_CXX_COMPILER})
 message(STATUS "Operating System: " ${CMAKE_SYSTEM})
 message(STATUS "Arch            : " ${CMAKE_SYSTEM_PROCESSOR})
-
 set(CMAKE_CXX_STANDARD 17)
 
-option(MAKE_SHARED "Build library shared" ON)
+option(MAKE_SHARED "Build library shared" OFF)
 
+include( GNUInstallDirs )
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
 
 ########################################################
@@ -23,52 +23,48 @@ if(NOT EXISTS ${CMAKE_MODULE_PATH}/version/version.cmake)
         https://gitlab.com/-/snippets/2417468/raw/main/version.cmake
         ${CMAKE_MODULE_PATH}/version/version.cmake)
 endif()
+
 include(${CMAKE_MODULE_PATH}/version/version.cmake)
 
-_configure_information_header(${CMAKE_CURRENT_SOURCE_DIR}/src/interfaceInformation/version.h.in ${CMAKE_CURRENT_SOURCE_DIR}/src/interfaceInformation/version.h)
-set(LIBRARY_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/build)
+_configure_information_header(
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/interfaceInformation/include/version.h.in
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/interfaceInformation/include/version.h
+    )
 
 
 ########################################################
 #                 Выбор файлов для компиляции          #
 ########################################################
 if(CMAKE_HOST_SYSTEM MATCHES "Linux")
-    set(IFACELIB_SOURCES src/interfaceInformation/ifaceinformation.cpp)
-    set(IFACELIB_HEADERS src/interfaceInformation/ifaceinformation.h)
+    set(IFACELIB_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/interfaceInformation/ifaceinformation.cpp)
+    set(IFACELIB_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/src/interfaceInformation/include/ifaceinformation.h)
 else()
     message(FATAL "Unable to build for your system")
 endif()
+
 
 
 ########################################################
 #                   Тип сборки                         #
 ########################################################
 if(MAKE_SHARED)
-    message("SHARED BUILD")
-    add_library(${PROJECT_NAME} SHARED ${IFACELIB_SOURCES})
-
+    message(STATUS "Interface library build shared")
+    add_library(${PROJECT_NAME} SHARED ${IFACELIB_SOURCES} ${IFACELIB_HEADERS})
     set_target_properties ( ${PROJECT_NAME} PROPERTIES
         PUBLIC_HEADER ${IFACELIB_HEADERS}
-        RUNTIME_OUTPUT_DIRECTORY ${LIBRARY_OUTPUT_PATH}
         VERSION ${PROJECT_VERSION} )
 else()
 
-    message("STATIC BUILD")
+    message("Interface library build static")
     add_library(${PROJECT_NAME} STATIC
         ${IFACELIB_HEADERS}
         ${IFACELIB_SOURCES}
     )
 endif()
 
-message("Install path: ${LIBRARY_OUTPUT_PATH}")
-
-set_target_properties(${PROJECT_NAME} PROPERTIES
-    VERSION ${PROJECT_VERSION}
-    PUBLIC_HEADER ${IFACELIB_HEADERS}
-    )
-
-include( GNUInstallDirs )
+target_include_directories(${PROJECT_NAME} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/interfaceInformation/include>)
+message(STATUS "Install path: ${CMAKE_INSTALL_LIBDIR}")
 install(TARGETS ${PROJECT_NAME}
-    LIBRARY DESTINATION ${LIBRARY_OUTPUT_PATH}
-    PUBLIC_HEADER DESTINATION ${LIBRARY_OUTPUT_PATH}/include
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+#    PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_LIBDIR}/include
     )
