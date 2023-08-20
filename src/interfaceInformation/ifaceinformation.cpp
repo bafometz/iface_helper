@@ -96,7 +96,7 @@ namespace iface_lib
                 for (size_t i = 0; i < ifc_num; ++i)
                 {
                     if (ifr[i].ifr_addr.sa_family != AF_INET) continue;
-                    NetInfoPtr nmInfo = std::make_shared< NetInfo >();
+                    InterfacePtr nmInfo = std::make_shared< Interface >();
 
                     nmInfo->interface  = ifr[i].ifr_name;
                     nmInfo->isUp       = is_interface_online(ifr[i].ifr_name);
@@ -124,7 +124,7 @@ namespace iface_lib
         }
     }
 
-    bool IfaceHelper::update_ip(int sd, ifreq *ifr, NetInfoPtr ni)
+    bool IfaceHelper::update_ip(int sd, ifreq *ifr, InterfacePtr ni)
     {
         if (ioctl(sd, SIOCGIFADDR, ifr) == 0)
         {
@@ -142,7 +142,7 @@ namespace iface_lib
         }
     }
 
-    bool IfaceHelper::update_broadcast(int sd, ifreq *ifr, NetInfoPtr ni)
+    bool IfaceHelper::update_broadcast(int sd, ifreq *ifr, InterfacePtr ni)
     {
         if (ioctl(sd, SIOCGIFBRDADDR, ifr) == 0)
         {
@@ -157,7 +157,7 @@ namespace iface_lib
         }
     }
 
-    bool IfaceHelper::update_mac(int sd, ifreq *ifr, NetInfoPtr ni)
+    bool IfaceHelper::update_mac(int sd, ifreq *ifr, InterfacePtr ni)
     {
         if (ioctl(sd, SIOCGIFHWADDR, ifr) == 0)
         {
@@ -176,7 +176,7 @@ namespace iface_lib
         }
     }
 
-    bool IfaceHelper::update_net_mask(int sd, ifreq *ifr, NetInfoPtr ni)
+    bool IfaceHelper::update_net_mask(int sd, ifreq *ifr, InterfacePtr ni)
     {
         if (ioctl(sd, SIOCGIFNETMASK, ifr) == 0)
         {
@@ -191,7 +191,7 @@ namespace iface_lib
         }
     }
 
-    bool IfaceHelper::update_mtu(int sd, ifreq *ifr, NetInfoPtr ni)
+    bool IfaceHelper::update_mtu(int sd, ifreq *ifr, InterfacePtr ni)
     {
         if (ioctl(sd, SIOCGIFMTU, ifr) == 0)
         {
@@ -205,7 +205,7 @@ namespace iface_lib
         }
     }
 
-    bool IfaceHelper::update_network(int sd, ifreq *ifr, NetInfoPtr ni)
+    bool IfaceHelper::update_network(int sd, ifreq *ifr, InterfacePtr ni)
     {
         int mask { 0 };
         int addr { 0 };

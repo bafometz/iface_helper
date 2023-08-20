@@ -15,25 +15,25 @@ namespace iface_lib
       public:
         IfaceHelper() noexcept;
         void       getInterfacesList(InterfacesList& iface_list) noexcept;    ///< Возвращает список интерфейсов
-        NetInfoPtr getInterfaceInfo(const std::string& iface_name) noexcept;  ///< Возвращает конкретный интерфейс
+        InterfacePtr getInterfaceInfo(const std::string& iface_name) noexcept;  ///< Возвращает конкретный интерфейс
         void       update() noexcept;                                         ///< Обновляет информацию
         ~IfaceHelper();
 
       private:
-        NetInfoPtr parseReq(const ifreq& ifr, int sd) noexcept;
+        InterfacePtr parseReq(const ifreq& ifr, int sd) noexcept;
 
         void update_information();
-        bool update_ip(int sd, ifreq* ifr, NetInfoPtr);
-        bool update_broadcast(int sd, ifreq* ifr, NetInfoPtr ni);
-        bool update_mac(int sd, ifreq* ifr, NetInfoPtr ni);
-        bool update_net_mask(int sd, ifreq* ifr, NetInfoPtr ni);
-        bool update_mtu(int sd, ifreq* ifr, NetInfoPtr ni);
-        bool update_network(int sd, ifreq* ifr, NetInfoPtr ni);
+        bool update_ip(int sd, ifreq* ifr, InterfacePtr);
+        bool update_broadcast(int sd, ifreq* ifr, InterfacePtr ni);
+        bool update_mac(int sd, ifreq* ifr, InterfacePtr ni);
+        bool update_net_mask(int sd, ifreq* ifr, InterfacePtr ni);
+        bool update_mtu(int sd, ifreq* ifr, InterfacePtr ni);
+        bool update_network(int sd, ifreq* ifr, InterfacePtr ni);
 
         std::string ipToStr(int ip);
 
       private:
-        std::map< std::string, NetInfoPtr > information_;
+        std::map< std::string, InterfacePtr > information_;
         const uint8_t                       maxLenMacAddr_ = 6;
     };
 

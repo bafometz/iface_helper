@@ -45,21 +45,24 @@ Information about interfaces is updated when the constructor is called, if there
 int main()
 {
 
-    iface_lib::IfaceHelper ni;
+    iface_lib::IfaceHelper inf;
+    iface_lib::InterfacesList list;
+    inf.getInterfacesList(list);
 
-    for(const auto& element: ni.getInterfacesList())
+    for(const auto element : list)
     {
-        std::cout << element->interface << std::endl;
+        std::cout << *element << std::endl;
     }
 
+
     /*
-     * Много часов спустя, возможно что-то могло измениться
-     * Нужно проверить, перед проверкой вызываем метод update()
+     * Many hours(?) after, when you will get information again,
+     * call update() function, mb something change 
     */
 
-    ni.update();
+    inf.update();
 
-    for(const auto element : ifaces)
+    for(const auto element : list)
     {
         std::cout << *element << std::endl;
     }

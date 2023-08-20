@@ -44,7 +44,7 @@ namespace iface_lib
 
     using IpPtr = std::shared_ptr< Ip_s >;
 
-    struct NetInfo
+    struct Interface
     {
         std::string          interface = "";      ///< Имя интерфейса
         std::vector< IpPtr > ip;                  ///< Список ip адресов
@@ -56,7 +56,7 @@ namespace iface_lib
         bool                 isUp       = false;  ///< Поднят интерфейс или нет
         bool                 isLoopBack = false;  ///< Виртуальный адрес
 
-        friend std::ostream& operator<<(std::ostream& os, const NetInfo& ni)
+        friend std::ostream& operator<<(std::ostream& os, const Interface& ni)
         {
             os << "Interface: " << ni.interface << "\n"
                << "Net mask: " << ni.netMask << "\n"
@@ -73,8 +73,8 @@ namespace iface_lib
         }
     };
 
-    using NetInfoPtr     = std::shared_ptr< NetInfo >;
-    using InterfacesList = std::vector< NetInfoPtr >;
+    using InterfacePtr     = std::shared_ptr< Interface >;
+    using InterfacesList = std::vector< InterfacePtr >;
 
 }  // namespace iface_helper
 #endif  // STRUCT_DEFINITION_H
