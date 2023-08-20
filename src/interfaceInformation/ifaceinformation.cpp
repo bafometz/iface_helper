@@ -6,7 +6,6 @@
 #include <sys/ioctl.h>
 #include <unistd.h>
 
-
 namespace iface_lib
 {
     static void print_error_msg(const std::string &msg)
@@ -55,19 +54,19 @@ namespace iface_lib
         update_information();
     }
 
-    InterfacesList IfaceHelper::getInterfacesList() noexcept
+    void IfaceHelper::getInterfacesList(InterfacesList &iface_list) noexcept
     {
         if (information_.empty())
         {
-            return {};
+            return;
         }
 
         InterfacesList lst;
         for (const auto element : information_)
         {
-            lst.push_back(element.second);
+            iface_list.push_back(element.second);
         }
-        return lst;
+        iface_list.shrink_to_fit();
     }
 
     IfaceHelper::~IfaceHelper() {}
@@ -249,10 +248,9 @@ namespace iface_lib
         return result;
     }
 
-}  // namespace iface_helper
+}  // namespace iface_lib
 
 // void UnixNetworkInformer::updateInfo()
 //{
 //     //    Взято:
 //     //
-

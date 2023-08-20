@@ -14,9 +14,9 @@ namespace iface_lib
     {
       public:
         IfaceHelper() noexcept;
-        InterfacesList getInterfacesList() noexcept;                             ///< Возвращает список интерфейсов
-        NetInfoPtr     getInterfaceInfo(const std::string& ifaceName) noexcept;  ///< Возвращает конкретный интерфейс
-        void           update() noexcept;                                        ///< Обновляет информацию
+        void       getInterfacesList(InterfacesList& iface_list) noexcept;    ///< Возвращает список интерфейсов
+        NetInfoPtr getInterfaceInfo(const std::string& iface_name) noexcept;  ///< Возвращает конкретный интерфейс
+        void       update() noexcept;                                         ///< Обновляет информацию
         ~IfaceHelper();
 
       private:
