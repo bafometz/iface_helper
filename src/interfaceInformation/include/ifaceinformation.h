@@ -30,7 +30,7 @@ namespace iface_lib
         bool update_mtu(int sd, ifreq* ifr, InterfacePtr ni);
         bool update_network(int sd, ifreq* ifr, InterfacePtr ni);
 
-        std::string ipToStr(int ip);
+        std::string ipToStr(int ip){return  "";};
 
       private:
         std::map< std::string, InterfacePtr > information_;

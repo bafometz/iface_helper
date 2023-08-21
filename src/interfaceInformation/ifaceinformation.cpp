@@ -95,8 +95,17 @@ namespace iface_lib
 
                 for (size_t i = 0; i < ifc_num; ++i)
                 {
-                    if (ifr[i].ifr_addr.sa_family != AF_INET) continue;
-                    InterfacePtr nmInfo = std::make_shared< Interface >();
+//                    if (ifr[i].ifr_addr.sa_family != AF_INET) continue;
+                    InterfacePtr nmInfo;
+
+                    if (auto res = information_.find(ifr[i].ifr_name); res != information_.end())
+                    {
+                        nmInfo = res->second;
+                    }
+                    else
+                    {
+                        nmInfo = std::make_shared< Interface >();
+                    }
 
                     nmInfo->interface  = ifr[i].ifr_name;
                     nmInfo->isUp       = is_interface_online(ifr[i].ifr_name);
@@ -126,13 +135,24 @@ namespace iface_lib
 
     bool IfaceHelper::update_ip(int sd, ifreq *ifr, InterfacePtr ni)
     {
-        if (ioctl(sd, SIOCGIFADDR, ifr) == 0)
+        if (ifr != nullptr && !ni->interface.empty())
         {
-            int   addr     = (( struct sockaddr_in       *)&(ifr->ifr_addr))->sin_addr.s_addr;
-            IpPtr ipptr    = std::make_shared< Ip_s >();
-            ipptr->ip      = ipToStr(addr);
-            ipptr->version = ip_version::ip_v4;  // IpV4
-            ni->ip.push_back(ipptr);
+            auto ip_s = std::make_shared< Ip_s >();
+            switch (ifr->ifr_addr.sa_family)
+            {
+            case AF_INET:
+                ip_s->version = ip_version::ip_v4;
+                ip_s->ip  = (( struct sockaddr_in  *)&(ifr->ifr_addr))->sin_addr.s_addr;
+                break;
+            case AF_INET6:
+//                ip_s->version = ip_version::ip_v6;
+//                auto ipv6_struct = (( struct sockaddr_in6  *)&(ifr->ifr_addr))->sin6_addr;
+//                ip_s->ip = ipv6_struct.__in6_u.__u6_addr32;
+                return false;
+                break;
+            }
+
+            ni->ip.push_back(ip_s);
             return true;
         }
         else
@@ -232,22 +252,6 @@ namespace iface_lib
         ni->network  = ipToStr(network);
         return true;
     }
-
-    std::string IfaceHelper::ipToStr(int ip)
-    {
-        std::string result;
-
-        result.append(std::to_string(ip & 0xFF));
-        result.push_back('.');
-        result.append(std::to_string(ip >> 8 & 0xFF));
-        result.push_back('.');
-        result.append(std::to_string(ip >> 16 & 0xFF));
-        result.push_back('.');
-        result.append(std::to_string(ip >> 24 & 0xFF));
-
-        return result;
-    }
-
 }  // namespace iface_lib
 
 // void UnixNetworkInformer::updateInfo()
