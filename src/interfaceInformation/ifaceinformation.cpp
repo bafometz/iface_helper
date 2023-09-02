@@ -95,7 +95,6 @@ namespace iface_lib
 
                 for (size_t i = 0; i < ifc_num; ++i)
                 {
-//                    if (ifr[i].ifr_addr.sa_family != AF_INET) continue;
                     InterfacePtr nmInfo;
 
                     if (auto res = information_.find(ifr[i].ifr_name); res != information_.end())
@@ -129,7 +128,7 @@ namespace iface_lib
 
         else
         {
-            std::cerr << "Can't open socket" << std::endl;
+            print_error_msg("Can't open socket");
         }
     }
 
@@ -141,14 +140,17 @@ namespace iface_lib
             switch (ifr->ifr_addr.sa_family)
             {
             case AF_INET:
-                ip_s->version = ip_version::ip_v4;
-                ip_s->ip  = (( struct sockaddr_in  *)&(ifr->ifr_addr))->sin_addr.s_addr;
+                ip_s->version  = ip_version::ip_v4;
+                ip_s->ip.at(0) = (( struct sockaddr_in * )&(ifr->ifr_addr))->sin_addr.s_addr;
+
                 break;
             case AF_INET6:
-//                ip_s->version = ip_version::ip_v6;
-//                auto ipv6_struct = (( struct sockaddr_in6  *)&(ifr->ifr_addr))->sin6_addr;
-//                ip_s->ip = ipv6_struct.__in6_u.__u6_addr32;
-                return false;
+                ip_s->version    = ip_version::ip_v6;
+                auto ipv6_struct = (( struct sockaddr_in6 * )&(ifr->ifr_addr))->sin6_addr;
+                for (size_t i = 0; i < 4; i++)  // 4 by uint32_t
+                {
+                    ip_s->ip.at(i) = ipv6_struct.__in6_u.__u6_addr32[i];
+                }
                 break;
             }
 
@@ -157,7 +159,7 @@ namespace iface_lib
         }
         else
         {
-            std::cerr << "Can't create io request to update ip address: " << strerror(errno) << std::endl;
+            print_error_msg("Can't create io request to update ip address: ");
             return false;
         }
     }
@@ -252,9 +254,17 @@ namespace iface_lib
         ni->network  = ipToStr(network);
         return true;
     }
-}  // namespace iface_lib
 
-// void UnixNetworkInformer::updateInfo()
-//{
-//     //    Взято:
-//     //
+    std::string IfaceHelper::ipToStr(int ip)
+    {
+        std::string result;
+        result.append(std::to_string(ip & 0xFF));
+        result.push_back('.');
+        result.append(std::to_string(ip >> 8 & 0xFF));
+        result.push_back('.');
+        result.append(std::to_string(ip >> 16 & 0xFF));
+        result.push_back('.');
+        result.append(std::to_string(ip >> 24 & 0xFF));
+        return result;
+    }
+}  // namespace iface_lib

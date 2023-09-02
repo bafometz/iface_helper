@@ -1,5 +1,6 @@
 #ifndef STRUCT_DEFINITION_H
 #define STRUCT_DEFINITION_H
+#include <array>
 #include <cstdint>
 #include <iostream>
 #include <memory>
@@ -17,9 +18,9 @@ namespace iface_lib
 
     struct Ip_s
     {
-        int        ip { 0 };  ///< Человекочитаемый ip
-        u_int64_t  ipInt { 0 };
-        ip_version version { ip_version::empty };
+        std::array< uint32_t, 4 > ip { 0, 0, 0, 0 };
+        u_int64_t                 ipInt { 0 };
+        ip_version                version { ip_version::empty };
 
         bool isV4() { return version == ip_version::ip_v4; };
 
@@ -61,19 +62,36 @@ namespace iface_lib
         std::string ipV4String()
         {
             std::string result;
-            result.append(std::to_string(ip & 0xFF));
+            result.append(std::to_string(ip.at(0) & 0xFF));
             result.push_back('.');
-            result.append(std::to_string(ip >> 8 & 0xFF));
+            result.append(std::to_string(ip.at(0) >> 8 & 0xFF));
             result.push_back('.');
-            result.append(std::to_string(ip >> 16 & 0xFF));
+            result.append(std::to_string(ip.at(0) >> 16 & 0xFF));
             result.push_back('.');
-            result.append(std::to_string(ip >> 24 & 0xFF));
+            result.append(std::to_string(ip.at(0) >> 24 & 0xFF));
             return result;
         }
 
         std::string ipV6String()
         {
-            return "";
+            auto toHex = [] (uint16_t val) ->std::string
+            {
+                static const char* digits = "0123456789ABCDEF";
+                std::string retStr{digits[(val >> 4) & 0x0F] , digits[val & 0x0F]};
+                return retStr;
+            };
+
+            std::string  retStr;
+            for(const auto val : ip)
+            {
+                int first = (val >> 16) & 0xffff;
+                int second = val & 0xffff;
+                retStr.append(toHex(first));
+                retStr.append(toHex(second));
+                retStr.append(":");
+            }
+            retStr.pop_back();
+            return retStr;
         }
     };
 
