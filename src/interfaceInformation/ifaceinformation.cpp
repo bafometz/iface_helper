@@ -6,6 +6,18 @@
 #include <sys/ioctl.h>
 #include <unistd.h>
 
+#include <netdb.h>
+#include <sys/socket.h>
+
+#include <ifaddrs.h>
+#include <sys/types.h>
+
+#include <linux/if_packet.h>
+#include <net/ethernet.h> /* the L2 protocols */
+#include <sys/socket.h>
+
+#include <limits>
+
 namespace iface_lib
 {
     static void print_error_msg(const std::string &msg)
@@ -69,6 +81,11 @@ namespace iface_lib
         iface_list.shrink_to_fit();
     }
 
+    void IfaceHelper::update() noexcept
+    {
+        update_information();
+    }
+
     IfaceHelper::~IfaceHelper() {}
 
     void IfaceHelper::update_information()
@@ -76,11 +93,6 @@ namespace iface_lib
         struct ifconf ifc;
         struct ifreq  ifr[10];
         int           sd { -1 };
-
-        if (!information_.empty())
-        {
-            information_.clear();
-        }
 
         sd = socket(PF_INET, SOCK_DGRAM, 0);
         if (sd > 0)
@@ -95,19 +107,46 @@ namespace iface_lib
 
                 for (size_t i = 0; i < ifc_num; ++i)
                 {
-                    if (ifr[i].ifr_addr.sa_family != AF_INET) continue;
-                    InterfacePtr nmInfo = std::make_shared< Interface >();
+                    InterfacePtr nmInfo;
+
+                    if (auto res = information_.find(ifr[i].ifr_name); res != information_.end())
+                    {
+                        nmInfo = res->second;
+                    }
+                    else
+                    {
+                        nmInfo = std::make_shared< Interface >();
+                    }
 
                     nmInfo->interface  = ifr[i].ifr_name;
                     nmInfo->isUp       = is_interface_online(ifr[i].ifr_name);
                     nmInfo->isLoopBack = is_interface_loopBack(ifr[i].ifr_name);
 
-                    if (!update_ip(sd, &ifr[i], nmInfo)) continue;
-                    if (!update_broadcast(sd, &ifr[i], nmInfo)) continue;
-                    if (!update_mac(sd, &ifr[i], nmInfo)) continue;
-                    if (!update_net_mask(sd, &ifr[i], nmInfo)) continue;
-                    if (!update_mtu(sd, &ifr[i], nmInfo)) continue;
-                    if (!update_network(sd, &ifr[i], nmInfo)) continue;
+                    if (!update_ip(sd, &ifr[i], nmInfo))
+                    {
+                        print_error_msg("err update ip");
+                    }
+                    if (!update_broadcast(sd, &ifr[i], nmInfo))
+                    {
+                        print_error_msg("err update ip");
+                    }
+                    if (!update_mac(sd, &ifr[i], nmInfo))
+                    {
+                        print_error_msg("err update ip");
+                    }
+                    if (!update_net_mask(sd, &ifr[i], nmInfo))
+                    {
+                        print_error_msg("err update ip");
+                    }
+                    if (!update_mtu(sd, &ifr[i], nmInfo))
+                    {
+                        print_error_msg("err update ip");
+                    }
+                    if (!update_network(sd, &ifr[i], nmInfo))
+                    {
+                        print_error_msg("err update ip");
+                    }
+                    updateIpV6(nmInfo);
                     nmInfo->ip.shrink_to_fit();
                     information_.insert({ nmInfo->interface, nmInfo });
                 }
@@ -120,24 +159,41 @@ namespace iface_lib
 
         else
         {
-            std::cerr << "Can't open socket" << std::endl;
+            print_error_msg("Can't open socket");
         }
     }
 
     bool IfaceHelper::update_ip(int sd, ifreq *ifr, InterfacePtr ni)
     {
-        if (ioctl(sd, SIOCGIFADDR, ifr) == 0)
+        if (ifr != nullptr && !ni->interface.empty())
         {
-            int   addr     = (( struct sockaddr_in       *)&(ifr->ifr_addr))->sin_addr.s_addr;
-            IpPtr ipptr    = std::make_shared< Ip_s >();
-            ipptr->ip      = ipToStr(addr);
-            ipptr->version = ip_version::ip_v4;  // IpV4
-            ni->ip.push_back(ipptr);
+            auto ip_s = std::make_shared< Ip_s >();
+            switch (ifr->ifr_addr.sa_family)
+            {
+            case AF_INET:
+                ip_s->version  = ip_version::ip_v4;
+                ip_s->ip.at(0) = (( struct sockaddr_in * )&(ifr->ifr_addr))->sin_addr.s_addr;
+                break;
+            case AF_INET6:
+                {
+                    ip_s->version    = ip_version::ip_v6;
+                    auto ipv6_struct = (( struct sockaddr_in6 * )&(ifr->ifr_addr))->sin6_addr;
+                    for (size_t i = 0; i < 4; i++)  // 4 by uint32_t
+                    {
+                        ip_s->ip.at(i) = ipv6_struct.__in6_u.__u6_addr32[i];
+                    }
+                }
+                break;
+            default:
+                return false;
+            }
+
+            ni->ip.push_back(ip_s);
             return true;
         }
         else
         {
-            std::cerr << "Can't create io request to update ip address: " << strerror(errno) << std::endl;
+            print_error_msg("Can't create io request to update ip address: ");
             return false;
         }
     }
@@ -233,10 +289,133 @@ namespace iface_lib
         return true;
     }
 
+    bool IfaceHelper::updateIpV6(InterfacePtr ni)
+    {
+        struct ifaddrs     *ifap, *ifa;
+        struct sockaddr_in *sa;
+        char               *addr;
+        getifaddrs(&ifap);
+        for (ifa = ifap; ifa; ifa = ifa->ifa_next)
+        {
+            if (ifa->ifa_name == ni->interface && ifa->ifa_addr->sa_family == AF_INET6)
+            {
+                auto ip_s      = std::make_shared< Ip_s >();
+                ip_s->version  = ip_version::ip_v6;
+                auto val       = (( struct sockaddr_in6       *)(ifa->ifa_addr))->sin6_addr;
+                auto val2      = val.s6_addr32;
+                ip_s->ip.at(0) = val2[0];
+                ip_s->ip.at(1) = val2[1];
+                ip_s->ip.at(2) = val2[2];
+                ip_s->ip.at(3) = val2[3];
+                ni->ip.push_back(ip_s);
+            }
+            else
+            {
+                continue;
+            }
+        }
+        freeifaddrs(ifap);
+        return true;
+    }
+
+//    void IfaceHelper::update_information2()
+//    {
+//        struct ifaddrs     *ifap, *ifa;
+//        struct sockaddr_in *sa;
+//        char               *addr;
+//        getifaddrs(&ifap);
+
+//        for (ifa = ifap; ifa; ifa = ifa->ifa_next)
+//        {
+//            InterfacePtr nmInfo;
+//            if (auto res = information_.find(ifa->ifa_name); res != information_.end())
+//            {
+//                nmInfo = res->second;
+//            }
+//            else
+//            {
+//                nmInfo            = std::make_shared< Interface >();
+//                nmInfo->interface = ifa->ifa_name;
+//            }
+//            update_ip(ifa, nmInfo);
+//            update_mac(ifa, nmInfo);
+//            update_broadcast(ifa, nmInfo);
+//        }
+
+//        freeifaddrs(ifap);
+//    }
+
+//    bool IfaceHelper::update_ip(ifaddrs *addr_struct, InterfacePtr iface_ptr)
+//    {
+//        if (!addr_struct || !iface_ptr)
+//        {
+//            return false;
+//        }
+
+//        auto ip_s = std::make_shared< Ip_s >();
+//        switch (addr_struct->ifa_addr->sa_family)
+//        {
+//        case AF_INET:
+//            {
+//                ip_s->version  = ip_version::ip_v4;
+//                auto val       = ( struct sockaddr_in       *)(addr_struct->ifa_addr);
+//                ip_s->ip.at(0) = val->sin_addr.s_addr;
+//            }
+//            break;
+//        case AF_INET6:
+//            {
+//                ip_s->version  = ip_version::ip_v6;
+//                auto val       = (( struct sockaddr_in6       *)(addr_struct->ifa_addr))->sin6_addr;
+//                auto val2      = val.s6_addr32;
+//                ip_s->ip.at(0) = val2[0];
+//                ip_s->ip.at(1) = val2[1];
+//                ip_s->ip.at(2) = val2[2];
+//                ip_s->ip.at(3) = val2[3];
+//            }
+//            break;
+//        default:
+//            return true;
+//        }
+
+//        iface_ptr->ip.push_back(ip_s);
+//        return true;
+//    }
+
+//    bool IfaceHelper::update_mac(ifaddrs *addr_struct, InterfacePtr iface_ptr)
+//    {
+//        if (!addr_struct || !iface_ptr)
+//        {
+//            return false;
+//        }
+
+//        if (addr_struct->ifa_addr->sa_family == AF_PACKET)
+//        {
+//            struct sockaddr_ll *s = ( struct sockaddr_ll * )addr_struct->ifa_addr;
+
+//            char macStr[18];
+//            snprintf(macStr, sizeof(macStr), "%02x:%02x:%02x:%02x:%02x:%02x", s->sll_addr[0], s->sll_addr[1], s->sll_addr[2], s->sll_addr[3],
+//                     s->sll_addr[4], s->sll_addr[5]);
+//            iface_ptr->macAddress = macStr;
+//        }
+
+//        return true;
+//    }
+
+//    bool IfaceHelper::update_broadcast(ifaddrs *addr_struct, InterfacePtr iface_ptr)
+//    {
+//        if (!addr_struct || !iface_ptr)
+//        {
+//            return false;
+//        }
+//        //        auto bcast    = (( struct sockaddr_in6    *)(addr_struct->ifa_addr))->sin6_addr.__in6_u.__u6_addr32;
+//        auto bcast2 = addr_struct->ifa_ifu.ifu_broadaddr->sa_data;
+//        //        iface_ptr->broadcast = ipToStr();
+//        std::cout << "BCast: " << iface_ptr->broadcast << std::endl;
+//    }
+
     std::string IfaceHelper::ipToStr(int ip)
     {
         std::string result;
-
         result.append(std::to_string(ip & 0xFF));
         result.push_back('.');
         result.append(std::to_string(ip >> 8 & 0xFF));
@@ -244,13 +423,6 @@ namespace iface_lib
         result.append(std::to_string(ip >> 16 & 0xFF));
         result.push_back('.');
         result.append(std::to_string(ip >> 24 & 0xFF));
-
         return result;
     }
-
 }  // namespace iface_lib
-
-// void UnixNetworkInformer::updateInfo()
-//{
-//     //    Взято:
-//     //
