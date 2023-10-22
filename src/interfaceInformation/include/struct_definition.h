@@ -74,21 +74,24 @@ namespace iface_lib
 
         std::string ipV6String()
         {
-            auto toHex = [] (uint16_t val) ->std::string
+            auto uint8ToHex = [](uint8_t val) -> std::string
             {
                 static const char* digits = "0123456789ABCDEF";
-                std::string retStr{digits[(val >> 4) & 0x0F] , digits[val & 0x0F]};
-                return retStr;
+                return { digits[(val >> 4) & 0xF], digits[( val )&0xF] };
             };
 
-            std::string  retStr;
-            for(const auto val : ip)
+            auto toHex = [uint8ToHex](uint16_t val) -> std::string { return uint8ToHex(val) + uint8ToHex(val >> 8); };
+
+            std::string retStr;
+            for (const auto val : ip)
             {
-                int first = (val >> 16) & 0xffff;
-                int second = val & 0xffff;
+                uint16_t first  = val & 0xffff;
+                uint16_t second = (val >> 16) & 0xffff;
+//                if(first == 0 && second == 0) continue;
                 retStr.append(toHex(first));
+                retStr.push_back(':');
                 retStr.append(toHex(second));
-                retStr.append(":");
+                retStr.push_back(':');
             }
             retStr.pop_back();
             return retStr;
